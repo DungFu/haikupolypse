@@ -32,6 +32,28 @@ tag.src = "https://www.youtube.com/iframe_api";
 var firstScriptTag = document.getElementsByTagName('script')[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
+function launchIntoFullscreen(element) {
+  if(element.requestFullscreen) {
+    element.requestFullscreen();
+  } else if(element.mozRequestFullScreen) {
+    element.mozRequestFullScreen();
+  } else if(element.webkitRequestFullscreen) {
+    element.webkitRequestFullscreen();
+  } else if(element.msRequestFullscreen) {
+    element.msRequestFullscreen();
+  }
+}
+
+function exitFromFullscreen() {
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.mozCancelFullScreen) {
+    document.mozCancelFullScreen();
+  } else if (document.webkitCancelFullScreen) {
+    document.webkitCancelFullScreen();
+  }
+}
+
 document.onkeydown = function(e) {
   if (isPlayerReady && !e.repeat) {
     switch (e.keyCode) {
@@ -47,6 +69,13 @@ document.onkeydown = function(e) {
         break;
       case 39: // right
         playNextVideo();
+        break;
+      case 70: // f
+        if (document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen) {
+          exitFromFullscreen();
+        } else {
+          launchIntoFullscreen(player.getIframe());
+        }
         break;
     }
   }
@@ -159,5 +188,5 @@ function playPrevVideo() {
 function playVideoObj(video) {
   titleElem.innerHTML = video.title + " &middot; " + video.score + " points";
   localStorage.setItem(video.name, video.id);
-  player.loadVideoById(video.id, 0, 'large');
+  player.loadVideoById(video.id, 0, 'default');
 }
