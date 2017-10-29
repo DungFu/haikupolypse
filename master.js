@@ -4,7 +4,6 @@ var videoIndex = 0;
 var isPlayerReady = false;
 var lastFetchedName = null;
 var youtubeUrl = "https://www.youtube.com/watch?v=";
-var currentStatus;
 
 var titleElem = document.getElementById("title");
 var sortTypeElem = document.getElementById("sortType");
@@ -106,9 +105,11 @@ function onYouTubeIframeAPIReady() {
   player = new YT.Player('player', {
     height: size[1],
     width: size[0],
+    playerVars: { 'autoplay': 1 },
     events: {
       'onReady': onPlayerReady,
-      'onStateChange': onPlayerStateChange
+      'onStateChange': onPlayerStateChange,
+      'onError': onPlayerError
     }
   });
 }
@@ -119,16 +120,13 @@ function onPlayerReady(event) {
 }
 
 function onPlayerStateChange(event) {
-  currentStatus = event.data;
   if (event.data == YT.PlayerState.ENDED) {
     playNextVideo();
-  } else if (event.data === YT.PlayerState.UNSTARTED) {
-    setTimeout(function() {
-      if (currentStatus === YT.PlayerState.UNSTARTED) {
-        playNextVideo();
-      }
-    }, 500);
   }
+}
+
+function onPlayerError(event) {
+  playNextVideo();
 }
 
 function fetchMoreVideos() {
@@ -200,4 +198,5 @@ function playVideoObj(video) {
   titleElem.innerHTML = video.title + " &middot; " + video.score + " points";
   localStorage.setItem(video.name, video.id);
   player.loadVideoById(video.id, 0, 'default');
+  player.playVideo();
 }
