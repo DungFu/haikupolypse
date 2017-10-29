@@ -132,9 +132,20 @@ function onPlayerStateChange(event) {
 }
 
 function fetchMoreVideos() {
-  var url = 'https://www.reddit.com/r/youtubehaiku/top.json?sort=top&t=' + sortType;
+  var url = 'https://www.reddit.com/r/youtubehaiku/';
+  var dividerChar;
+  if (sortType === 'hot') {
+    url += 'hot.json';
+    dividerChar = '?';
+  } else if (sortType === 'new') {
+    url += 'new.json';
+    dividerChar = '?';
+  } else {
+    url += 'top.json?sort=top&t=' + sortType;
+    dividerChar = '&';
+  }
   if (lastFetchedName !== null) {
-    url += '&after=' + lastFetchedName;
+    url += dividerChar + 'after=' + lastFetchedName;
   }
   fetch(url).then(function(response) {
     return response.json();
