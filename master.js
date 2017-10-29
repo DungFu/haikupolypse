@@ -2,7 +2,7 @@ var player = null;
 var videos = [];
 var videoIndex = 0;
 var isPlayerReady = false;
-var lastFetchedName = null;
+var lastFetchedId = null;
 var youtubeUrl = "https://www.youtube.com/watch?v=";
 
 var titleElem = document.getElementById("title");
@@ -20,7 +20,7 @@ sortTypeElem.addEventListener("change", function() {
   if (isPlayerReady) {
     videos = [];
     videoIndex = 0;
-    lastFetchedName = null;
+    lastFetchedId = null;
     fetchMoreVideos();
   }
 });
@@ -142,8 +142,8 @@ function fetchMoreVideos() {
     url += 'top.json?sort=top&t=' + sortType;
     dividerChar = '&';
   }
-  if (lastFetchedName !== null) {
-    url += dividerChar + 'after=' + lastFetchedName;
+  if (lastFetchedId !== null) {
+    url += dividerChar + 'after=' + lastFetchedId;
   }
   fetch(url).then(function(response) {
     return response.json();
@@ -153,17 +153,17 @@ function fetchMoreVideos() {
     for (var i = 0; i < jsonData.data.children.length; i++) {
       var data = jsonData.data.children[i].data;
       var url = data.url;
-      var name = data.name;
-      if (url.includes(youtubeUrl) && localStorage.getItem(name) === null) {
+      var id = data.id;
+      if (url.includes(youtubeUrl) && !localStorage.getItem(id)) {
         videos.push({
-          id: url.split(youtubeUrl)[1].split('&')[0],
-          name: name,
+          id: id,
+          score: data.score,
           title: data.title,
-          score: data.score
+          youtubeId: url.split(youtubeUrl)[1].split('&')[0]
         });
       }
       if (i === jsonData.data.children.length - 1) {
-        lastFetchedName = name;
+        lastFetchedId = id;
       }
     }
     if (shouldPlayVideo && videoIndex < videos.length) {
@@ -196,7 +196,7 @@ function playPrevVideo() {
 
 function playVideoObj(video) {
   titleElem.innerHTML = video.title + " &middot; " + video.score + " points";
-  localStorage.setItem(video.name, video.id);
-  player.loadVideoById(video.id, 0, 'default');
+  localStorage.setItem(video.id, true);
+  player.loadVideoById(video.youtubeId, 0, 'default');
   player.playVideo();
 }
