@@ -7,6 +7,24 @@ var youtubeUrl = "https://www.youtube.com/watch?v=";
 var currentStatus;
 
 var titleElem = document.getElementById("title");
+var sortTypeElem = document.getElementById("sortType");
+
+var sortType = localStorage.getItem('sortType');
+if (sortType === null) {
+  sortType = 'month';
+}
+sortTypeElem.value = sortType;
+
+sortTypeElem.addEventListener("change", function() {
+  sortType = sortTypeElem.value;
+  localStorage.setItem('sortType', sortType);
+  if (isPlayerReady) {
+    videos = [];
+    videoIndex = 0;
+    lastFetchedName = null;
+    fetchMoreVideos();
+  }
+});
 
 var tag = document.createElement('script');
 
@@ -85,11 +103,10 @@ function onPlayerStateChange(event) {
 }
 
 function fetchMoreVideos() {
-  var url = 'https://www.reddit.com/r/youtubehaiku/hot.json';
+  var url = 'https://www.reddit.com/r/youtubehaiku/top.json?sort=top&t=' + sortType;
   if (lastFetchedName !== null) {
-    url += '?after=' + lastFetchedName;
+    url += '&after=' + lastFetchedName;
   }
-  console.log('Fetching more videos with url: ' + url);
   fetch(url).then(function(response) {
     return response.json();
   }).then(function(jsonData) {
