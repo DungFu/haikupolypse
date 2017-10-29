@@ -2,7 +2,7 @@ var player = null;
 var videos = [];
 var videoIndex = 0;
 var isPlayerReady = false;
-var lastFetchedId = null;
+var lastFetchedName = null;
 var youtubeUrl = "https://www.youtube.com/watch?v=";
 
 var titleElem = document.getElementById("title");
@@ -20,7 +20,7 @@ sortTypeElem.addEventListener("change", function() {
   if (isPlayerReady) {
     videos = [];
     videoIndex = 0;
-    lastFetchedId = null;
+    lastFetchedName = null;
     fetchMoreVideos();
   }
 });
@@ -142,8 +142,8 @@ function fetchMoreVideos() {
     url += 'top.json?sort=top&t=' + sortType;
     dividerChar = '&';
   }
-  if (lastFetchedId !== null) {
-    url += dividerChar + 'after=' + lastFetchedId;
+  if (lastFetchedName !== null) {
+    url += dividerChar + 'after=' + lastFetchedName;
   }
   fetch(url).then(function(response) {
     return response.json();
@@ -163,7 +163,7 @@ function fetchMoreVideos() {
         });
       }
       if (i === jsonData.data.children.length - 1) {
-        lastFetchedId = id;
+        lastFetchedName = data.name;
       }
     }
     if (shouldPlayVideo && videoIndex < videos.length) {
