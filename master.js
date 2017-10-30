@@ -153,14 +153,18 @@ function fetchMoreVideos() {
     for (var i = 0; i < jsonData.data.children.length; i++) {
       var data = jsonData.data.children[i].data;
       var url = data.url;
-      var id = data.id;
-      if (url.includes(youtubeUrl) && !localStorage.getItem(id)) {
-        videos.push({
-          id: id,
-          score: data.score,
-          title: data.title,
-          youtubeId: url.split(youtubeUrl)[1].split('&')[0]
-        });
+      if (url.includes(youtubeUrl)) {
+        var youtubeId = url.split(youtubeUrl)[1].split('&')[0];
+        var id = data.id;
+        if (!localStorage.getItem(id) && !localStorage.getItem(youtubeId)) {
+          videos.push({
+            id: id,
+            permalink: data.permalink,
+            score: data.score,
+            title: data.title,
+            youtubeId: youtubeId
+          });
+        }
       }
       if (i === jsonData.data.children.length - 1) {
         lastFetchedName = data.name;
@@ -196,7 +200,9 @@ function playPrevVideo() {
 
 function playVideoObj(video) {
   titleElem.innerHTML = video.title + " &middot; " + video.score + " points";
+  titleElem.href = 'https://www.reddit.com' + video.permalink;
   localStorage.setItem(video.id, true);
+  localStorage.setItem(video.youtubeId, true);
   player.loadVideoById(video.youtubeId, 0, 'default');
   player.playVideo();
 }
