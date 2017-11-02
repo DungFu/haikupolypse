@@ -3,7 +3,6 @@ var videos = [];
 var videoIndex = 0;
 var isPlayerReady = false;
 var lastFetchedName = null;
-var youtubeUrl = "https://www.youtube.com/watch?v=";
 
 var titleElem = document.getElementById("title");
 var sortTypeElem = document.getElementById("sortType");
@@ -152,19 +151,33 @@ function fetchMoreVideos() {
     var shouldPlayVideo = videos.length === 0 || videoIndex >= videos.length;
     for (var i = 0; i < jsonData.data.children.length; i++) {
       var data = jsonData.data.children[i].data;
+      var id = data.id;
       var url = data.url;
-      if (url.includes(youtubeUrl)) {
-        var youtubeId = url.split(youtubeUrl)[1].split('&')[0];
-        var id = data.id;
-        if (!localStorage.getItem(id) && !localStorage.getItem(youtubeId)) {
-          videos.push({
-            id: id,
-            permalink: data.permalink,
-            score: data.score,
-            title: data.title,
-            youtubeId: youtubeId
-          });
+      var urlParams = parseUrlParams(url);
+      var youtubeId = null;
+      if (data.domain === 'youtu.be') {
+        youtubeId = url.split('youtu.be/')[1].split('?')[0];
+      } else if (data.domain === 'youtube.com') {
+        if (urlParams.v !== undefined) {
+          youtubeId = urlParams.v;
+        } else {
+          var youtubeUrls = ["youtube.com/v/", 'youtube.com/embed/'];
+          for (var urlIndex = 0; i < youtubeUrls.length; i++) {
+            if (url.includes(youtubeUrls[urlIndex])) {
+              youtubeId = url.split(youtubeUrls[urlIndex])[1].split('?')[0];
+            }
+          }
         }
+      }
+      if (youtubeId !== null && !localStorage.getItem(id) && !localStorage.getItem(youtubeId)) {
+        videos.push({
+          id: id,
+          permalink: data.permalink,
+          score: data.score,
+          title: data.title,
+          url: url,
+          youtubeId: youtubeId
+        });
       }
       if (i === jsonData.data.children.length - 1) {
         lastFetchedName = data.name;
@@ -203,6 +216,30 @@ function playVideoObj(video) {
   titleElem.href = 'https://www.reddit.com' + video.permalink;
   localStorage.setItem(video.id, true);
   localStorage.setItem(video.youtubeId, true);
-  player.loadVideoById(video.youtubeId, 0, 'default');
+  var urlParams = parseUrlParams(video.url);
+  var startTime = 0;
+  if (urlParams.t !== undefined) {
+    startTime = urlParams.t;
+  } else if (urlParams.start != undefined) {
+    startTime = urlParams.start;
+  }
+  player.loadVideoById(video.youtubeId, startTime, 'default');
   player.playVideo();
+}
+
+function parseUrlParams(url) {
+  var params = {};
+  var baseSplit = url.split('?');
+  if (baseSplit.length > 1) {
+    var params = baseSplit[1].split('&');
+    for (var i = 0; i < params.length; i++) {
+      var paramVals = params[i].split('=');
+      if (paramVals.length > 1) {
+        params[paramVals[0]] = paramVals[1];
+      } else {
+        params[paramVals[0]] = true;
+      }
+    }
+  }
+  return params;
 }
